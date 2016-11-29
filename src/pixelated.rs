@@ -1,3 +1,5 @@
+use std::collections::{VecDeque, HashSet};
+
 use rand::{thread_rng, Rng, Rand};
 
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -41,6 +43,8 @@ pub struct Pixelated {
     cols: usize,
 }
 
+static DIRECTIONS: [(isize, isize); 4] = [(0, 1), (1, 0), (0, -1), (-1, 0)];
+
 impl Pixelated {
     pub fn new(rows: usize, cols: usize) -> Pixelated {
         assert!(rows > 0 && cols > 0, "Must have non-zero rows and columns");
@@ -65,5 +69,45 @@ impl Pixelated {
 
     pub fn get_grid(&self) -> &Grid {
         &self.grid
+    }
+
+    pub fn apply_tile(&mut self, tile: Tile) {
+        let mut open = VecDeque::new();
+        open.push_back((0, 0));
+
+        let mut seen = HashSet::new();
+
+        let original_tile = self.get((0, 0)).unwrap();
+        while open.len() > 0 {
+            let (row, col) = open.pop_front().unwrap();
+            seen.insert((row, col));
+
+            self.put_tile(row as usize, col as usize, tile);
+
+            for &(drow, dcol) in DIRECTIONS.iter() {
+                let next = (row + drow, col + dcol);
+                if seen.contains(&next) {
+                    continue;
+                }
+
+                let next_color = self.get(next);
+                if next_color.is_some() && next_color.unwrap() == original_tile {
+                    open.push_back(next);
+                }
+            }
+        }
+    }
+
+    fn get(&self, (row, col): (isize, isize)) -> Option<Tile> {
+        if row < 0 || col < 0 || row >= self.rows as isize || col >= self.cols as isize {
+            None
+        }
+        else {
+            Some(self.grid[row as usize][col as usize])
+        }
+    }
+
+    fn put_tile(&mut self, row: usize, col: usize, tile: Tile) {
+        self.grid[row][col] = tile;
     }
 }

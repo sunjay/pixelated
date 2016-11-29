@@ -3,7 +3,7 @@ extern crate ansi_term;
 
 mod pixelated;
 
-use std::io::{self, Read, Write};
+use std::io::{self, Write};
 use std::process::Command;
 
 use ansi_term::Colour;
@@ -13,7 +13,7 @@ use pixelated::{Pixelated, Grid, Tile};
 static BOX: &'static str = "\u{2588}";
 
 fn main() {
-    let game = Pixelated::new(10, 64);
+    let mut game = Pixelated::new(10, 64);
 
     let stdin = io::stdin();
 
@@ -33,11 +33,13 @@ fn main() {
             break;
         }
 
-        let color = Tile::from_str(&buffer);
-        if (color.is_none()) {
+        let tile = Tile::from_str(&buffer);
+        if tile.is_none() {
             error = Some(format!("Unrecognized input: '{}'", buffer));
             continue;
         }
+
+        game.apply_tile(tile.unwrap());
     }
 }
 

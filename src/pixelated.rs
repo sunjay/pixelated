@@ -13,14 +13,15 @@ pub enum Tile {
 static ALL_TILES: [Tile; 6] = [Tile::Blue, Tile::Red, Tile::Green, Tile::Yellow, Tile::Cyan, Tile::Purple];
 
 impl Tile {
-    pub fn from_str(data: &str) -> Tile {
+    pub fn from_str(data: &str) -> Option<Tile> {
         match data {
-            "b" => Tile::Blue,
-            "r" => Tile::Red,
-            "g" => Tile::Green,
-            "y" => Tile::Yellow,
-            "c" => Tile::Cyan,
-            "p" => Tile::Purple,
+            "b" => Some(Tile::Blue),
+            "r" => Some(Tile::Red),
+            "g" => Some(Tile::Green),
+            "y" => Some(Tile::Yellow),
+            "c" => Some(Tile::Cyan),
+            "p" => Some(Tile::Purple),
+            _ => None,
         }
     }
 }

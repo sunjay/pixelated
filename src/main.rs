@@ -3,7 +3,8 @@ extern crate ansi_term;
 
 mod pixelated;
 
-use std::io::{self, Read};
+use std::io::{self, Read, Write};
+use std::process::Command;
 
 use ansi_term::Colour;
 
@@ -12,19 +13,36 @@ use pixelated::{Pixelated, Grid, Tile};
 static BOX: &'static str = "\u{2588}";
 
 fn main() {
-    let game = Pixelated::new(10, 16);
+    let game = Pixelated::new(10, 64);
 
+    let stdin = io::stdin();
+
+    let mut error = None;
     loop {
-        draw_grid(game.get_grid());
+        clear_screen();
 
-        draw_controls();
-        break;
+        draw_grid(game.get_grid());
+        draw_controls(error.as_ref());
+        io::stdout().flush().ok().expect("Could not flush stdout");
+
+        let mut buffer = String::new();
+        stdin.read_line(&mut buffer).expect("Could not read input");
+
+        let buffer = buffer.trim();
+        if buffer == "q" {
+            break;
+        }
+
+        let color = Tile::from_str(&buffer);
+        if (color.is_none()) {
+            error = Some(format!("Unrecognized input: '{}'", buffer));
+            continue;
+        }
     }
 }
 
 fn draw_grid(grid: &Grid) {
     for row in grid {
-        print!(" ");
         for col in row {
             let tile = paint_str(*col, BOX);
             print!("{}", tile);
@@ -33,17 +51,23 @@ fn draw_grid(grid: &Grid) {
     }
 }
 
-fn draw_controls() {
+fn draw_controls(error: Option<&String>) {
     println!("");
 
-    print!(" {}", control_cell(Tile::Blue, "b"));
+    print!("{}", control_cell(Tile::Blue, "b"));
     print!(" {}", control_cell(Tile::Red, "r"));
     print!(" {}", control_cell(Tile::Green, "g"));
     print!(" {}", control_cell(Tile::Yellow, "y"));
     print!(" {}", control_cell(Tile::Cyan, "c"));
     print!(" {}", control_cell(Tile::Purple, "p"));
-
+    print!(" quit with q");
     println!("\n");
+
+    if !error.is_none() {
+        println!("{}", Colour::Red.paint(error.unwrap().clone()).to_string());
+    }
+
+    print!("Enter color: ");
 }
 
 fn control_cell(tile: Tile, command: &str) -> String {
@@ -63,4 +87,8 @@ fn tile_colour(tile: Tile) -> Colour {
         Tile::Cyan => Colour::Cyan,
         Tile::Purple => Colour::Purple,
     }
+}
+
+fn clear_screen() {
+    Command::new("clear").status().expect("Could not clear screen");
 }

@@ -71,6 +71,10 @@ impl Pixelated {
         open.push_back((0, 0));
 
         let original_tile = self.get((0, 0)).unwrap();
+        if tile == original_tile {
+            return;
+        }
+
         while open.len() > 0 {
             let (row, col) = open.pop_front().unwrap();
 

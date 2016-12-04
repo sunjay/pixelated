@@ -89,7 +89,7 @@ impl Pixelated {
                 let next_color = self.get(next);
 
                 if next_color.is_some() && next_color.unwrap() == original_tile {
-                    open.push_back(next);
+                    open.push_front(next);
                 }
             }
         }

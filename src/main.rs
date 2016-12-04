@@ -17,12 +17,13 @@ fn main() {
 
     let stdin = io::stdin();
 
+    let mut moves = 0;
     let mut error = None;
     loop {
         clear_screen();
 
         draw_grid(game.get_grid());
-        draw_controls(error.as_ref());
+        draw_controls(moves, error.as_ref());
         io::stdout().flush().ok().expect("Could not flush stdout");
 
         let mut buffer = String::new();
@@ -39,6 +40,9 @@ fn main() {
             continue;
         }
 
+        error = None;
+        moves += 1;
+
         game.apply_tile(tile.unwrap());
     }
 }
@@ -53,7 +57,7 @@ fn draw_grid(grid: &Grid) {
     }
 }
 
-fn draw_controls(error: Option<&String>) {
+fn draw_controls(moves: u32, error: Option<&String>) {
     println!("");
 
     print!("{}", control_cell(Tile::Blue, "b"));
@@ -64,6 +68,8 @@ fn draw_controls(error: Option<&String>) {
     print!(" {}", control_cell(Tile::Purple, "p"));
     print!(" quit with q");
     println!("\n");
+
+    println!("Moves: {}", moves);
 
     if !error.is_none() {
         println!("{}", Colour::Red.paint(error.unwrap().clone()).to_string());

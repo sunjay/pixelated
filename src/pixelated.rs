@@ -1,4 +1,4 @@
-use std::collections::{VecDeque, HashSet};
+use std::collections::{VecDeque};
 
 use rand::{thread_rng, Rng, Rand};
 
@@ -75,22 +75,16 @@ impl Pixelated {
         let mut open = VecDeque::new();
         open.push_back((0, 0));
 
-        let mut seen = HashSet::new();
-
         let original_tile = self.get((0, 0)).unwrap();
         while open.len() > 0 {
             let (row, col) = open.pop_front().unwrap();
-            seen.insert((row, col));
 
             self.put_tile(row as usize, col as usize, tile);
 
             for &(drow, dcol) in DIRECTIONS.iter() {
                 let next = (row + drow, col + dcol);
-                if seen.contains(&next) {
-                    continue;
-                }
-
                 let next_color = self.get(next);
+
                 if next_color.is_some() && next_color.unwrap() == original_tile {
                     open.push_back(next);
                 }

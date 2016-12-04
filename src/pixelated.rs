@@ -15,14 +15,14 @@ pub enum Tile {
 static ALL_TILES: [Tile; 6] = [Tile::Blue, Tile::Red, Tile::Green, Tile::Yellow, Tile::Cyan, Tile::Purple];
 
 impl Tile {
-    pub fn from_char(data: &char) -> Option<Tile> {
-        match *data {
-            'b' => Some(Tile::Blue),
-            'r' => Some(Tile::Red),
-            'g' => Some(Tile::Green),
-            'y' => Some(Tile::Yellow),
-            'c' => Some(Tile::Cyan),
-            'p' => Some(Tile::Purple),
+    pub fn from_str(data: &str) -> Option<Tile> {
+        match data {
+            "b" => Some(Tile::Blue),
+            "r" => Some(Tile::Red),
+            "g" => Some(Tile::Green),
+            "y" => Some(Tile::Yellow),
+            "c" => Some(Tile::Cyan),
+            "p" => Some(Tile::Purple),
             _ => None,
         }
     }
@@ -36,8 +36,8 @@ impl Rand for Tile {
 
 // Use these parameters to set the size of the game
 // Make sure both values are greater than zero
-const ROWS: usize = 40;
-const COLS: usize = 160;
+const ROWS: usize = 10;
+const COLS: usize = 64;
 
 pub type Grid = [Tile; ROWS*COLS];
 

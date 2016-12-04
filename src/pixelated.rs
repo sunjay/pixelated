@@ -39,31 +39,35 @@ impl Rand for Tile {
 const ROWS: usize = 10;
 const COLS: usize = 64;
 
-pub type Grid = [[Tile; COLS]; ROWS];
+pub type Grid = [Tile; ROWS*COLS];
 
 pub struct Pixelated {
     grid: Grid,
 }
 
-static DIRECTIONS: [(isize, isize); 4] = [(0, 1), (1, 0), (0, -1), (-1, 0)];
+const DIRECTIONS: [(isize, isize); 4] = [(0, 1), (1, 0), (0, -1), (-1, 0)];
 
 impl Pixelated {
+    pub fn rows() -> usize {
+        ROWS
+    }
+
+    pub fn cols() -> usize {
+        COLS
+    }
+
     pub fn new() -> Pixelated {
         let mut rng = thread_rng();
         let sample = rng.gen_iter::<Tile>().take(ROWS * COLS);
 
-        let mut grid = [[Tile::Red; COLS]; ROWS];
+        let mut grid = [Tile::Red; ROWS*COLS];
         for (i, tile) in sample.enumerate() {
-            grid[i / COLS][i % COLS] = tile;
+            grid[i] = tile;
         }
 
         Pixelated {
             grid: grid,
         }
-    }
-
-    pub fn get_grid(&self) -> &Grid {
-        &self.grid
     }
 
     pub fn apply_tile(&mut self, tile: Tile) {
@@ -91,16 +95,16 @@ impl Pixelated {
         }
     }
 
-    fn get(&self, (row, col): (isize, isize)) -> Option<Tile> {
-        if row < 0 || col < 0 || row >= ROWS as isize || col >= COLS as isize {
+    pub fn get(&self, (row, col): (isize, isize)) -> Option<Tile> {
+        if row < 0 || col < 0 {
             None
         }
         else {
-            Some(self.grid[row as usize][col as usize])
+            self.grid.get(row as usize * COLS + col as usize).map(|v| *v)
         }
     }
 
     fn put_tile(&mut self, row: usize, col: usize, tile: Tile) {
-        self.grid[row][col] = tile;
+        self.grid[row * COLS + col] = tile;
     }
 }

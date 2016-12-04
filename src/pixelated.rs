@@ -1,4 +1,4 @@
-use std::collections::{VecDeque};
+use std::collections::{VecDeque, HashMap};
 
 use rand::{thread_rng, Rng, Rand};
 
@@ -39,7 +39,7 @@ impl Rand for Tile {
 const ROWS: usize = 10;
 const COLS: usize = 64;
 
-pub type Grid = [[Tile; COLS]; ROWS];
+pub type Grid = HashMap<(isize, isize), Tile>;
 
 pub struct Pixelated {
     grid: Grid,
@@ -52,9 +52,9 @@ impl Pixelated {
         let mut rng = thread_rng();
         let sample = rng.gen_iter::<Tile>().take(ROWS * COLS);
 
-        let mut grid = [[Tile::Red; COLS]; ROWS];
+        let mut grid: Grid = HashMap::new();
         for (i, tile) in sample.enumerate() {
-            grid[i / COLS][i % COLS] = tile;
+            grid.insert(((i / COLS) as isize, (i % COLS) as isize), tile);
         }
 
         Pixelated {
@@ -62,23 +62,27 @@ impl Pixelated {
         }
     }
 
-    pub fn get_grid(&self) -> &Grid {
-        &self.grid
+    pub fn rows() -> usize {
+        ROWS
+    }
+
+    pub fn cols() -> usize {
+        COLS
     }
 
     pub fn apply_tile(&mut self, tile: Tile) {
         let mut open = VecDeque::new();
         open.push_back((0, 0));
 
-        let original_tile = self.get((0, 0)).unwrap();
+        let original_tile = self.get(&(0, 0)).unwrap();
         while open.len() > 0 {
             let (row, col) = open.pop_front().unwrap();
 
-            self.put_tile(row as usize, col as usize, tile);
+            self.put_tile(row, col, tile);
 
             for &(drow, dcol) in DIRECTIONS.iter() {
                 let next = (row + drow, col + dcol);
-                let next_color = self.get(next);
+                let next_color = self.get(&next);
 
                 if next_color.is_some() && next_color.unwrap() == original_tile {
                     open.push_back(next);
@@ -87,16 +91,15 @@ impl Pixelated {
         }
     }
 
-    fn get(&self, (row, col): (isize, isize)) -> Option<Tile> {
-        if row < 0 || col < 0 || row >= ROWS as isize || col >= COLS as isize {
-            None
-        }
-        else {
-            Some(self.grid[row as usize][col as usize])
-        }
+    pub fn get(&self, position: &(isize, isize)) -> Option<Tile> {
+        self.grid.get(position).map(|v| *v)
     }
 
-    fn put_tile(&mut self, row: usize, col: usize, tile: Tile) {
-        self.grid[row][col] = tile;
+    fn put_tile(&mut self, row: isize, col: isize, tile: Tile) {
+        // All the tiles that should be there, are already there, so any
+        // new insertions are errors
+        if self.grid.insert((row, col), tile).is_none() {
+            panic!("Tile placed in invalid position");
+        }
     }
 }

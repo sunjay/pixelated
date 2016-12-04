@@ -8,7 +8,7 @@ use std::process::Command;
 
 use ansi_term::Colour;
 
-use pixelated::{Pixelated, Grid, Tile};
+use pixelated::{Pixelated, Tile};
 
 static BOX: &'static str = "\u{2588}";
 
@@ -22,7 +22,7 @@ fn main() {
     loop {
         clear_screen();
 
-        draw_grid(game.get_grid());
+        draw_grid(&game);
         draw_controls(moves, error.as_ref());
         io::stdout().flush().ok().expect("Could not flush stdout");
 
@@ -47,10 +47,11 @@ fn main() {
     }
 }
 
-fn draw_grid(grid: &Grid) {
-    for row in grid.iter() {
-        for col in row.iter() {
-            let tile = paint_str(*col, BOX);
+fn draw_grid(game: &Pixelated) {
+    for row in 0..Pixelated::rows() {
+        for col in 0..Pixelated::cols() {
+            let tile = game.get(&(row as isize, col as isize)).unwrap();
+            let tile = paint_str(tile, BOX);
             print!("{}", tile);
         }
         print!("\n");

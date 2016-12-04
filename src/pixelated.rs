@@ -34,36 +34,31 @@ impl Rand for Tile {
     }
 }
 
-pub type Grid = Vec<Vec<Tile>>;
+// Use these parameters to set the size of the game
+// Make sure both values are greater than zero
+const ROWS: usize = 10;
+const COLS: usize = 64;
 
-#[derive(Debug, PartialEq, Clone)]
+pub type Grid = [[Tile; COLS]; ROWS];
+
 pub struct Pixelated {
     grid: Grid,
-    rows: usize,
-    cols: usize,
 }
 
 static DIRECTIONS: [(isize, isize); 4] = [(0, 1), (1, 0), (0, -1), (-1, 0)];
 
 impl Pixelated {
-    pub fn new(rows: usize, cols: usize) -> Pixelated {
-        assert!(rows > 0 && cols > 0, "Must have non-zero rows and columns");
-
+    pub fn new() -> Pixelated {
         let mut rng = thread_rng();
-        let sample = rng.gen_iter::<Tile>().take(rows * cols);
+        let sample = rng.gen_iter::<Tile>().take(ROWS * COLS);
 
-        let mut grid = vec![Vec::new()];
+        let mut grid = [[Tile::Red; COLS]; ROWS];
         for (i, tile) in sample.enumerate() {
-            grid.last_mut().unwrap().push(tile);
-            if (i + 1) % cols == 0 {
-                grid.push(Vec::new());
-            }
+            grid[i / COLS][i % COLS] = tile;
         }
 
         Pixelated {
             grid: grid,
-            rows: rows,
-            cols: cols,
         }
     }
 
@@ -93,7 +88,7 @@ impl Pixelated {
     }
 
     fn get(&self, (row, col): (isize, isize)) -> Option<Tile> {
-        if row < 0 || col < 0 || row >= self.rows as isize || col >= self.cols as isize {
+        if row < 0 || col < 0 || row >= ROWS as isize || col >= COLS as isize {
             None
         }
         else {

@@ -13,7 +13,7 @@ use pixelated::{Pixelated, Grid, Tile};
 static BOX: &'static str = "\u{2588}";
 
 fn main() {
-    let mut game = Pixelated::new(10, 64);
+    let mut game = Pixelated::new();
 
     let stdin = io::stdin();
 
@@ -48,8 +48,8 @@ fn main() {
 }
 
 fn draw_grid(grid: &Grid) {
-    for row in grid {
-        for col in row {
+    for row in grid.iter() {
+        for col in row.iter() {
             let tile = paint_str(*col, BOX);
             print!("{}", tile);
         }

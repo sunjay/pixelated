@@ -6,3 +6,4 @@ authors = ["Sunjay Varma <varma.sunjay@gmail.com>"]
 [dependencies]
 ansi_term = "0.9"
 rand = "0.3"
+ncurses = "5.84.0"

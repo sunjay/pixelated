@@ -1,42 +1,76 @@
 extern crate rand;
-extern crate ansi_term;
+extern crate ncurses;
 
 mod pixelated;
 
-use std::io::{self, Write};
-use std::process::Command;
+use std::char::from_u32;
 
-use ansi_term::Colour;
+use ncurses::{
+    initscr,
+    start_color,
+    init_pair,
+    attron,
+    attroff,
+    printw,
+    refresh,
+    getch,
+    endwin,
+    clear,
+    COLOR_WHITE,
+    COLOR_BLUE,
+    COLOR_RED,
+    COLOR_GREEN,
+    COLOR_YELLOW,
+    COLOR_CYAN,
+    COLOR_MAGENTA,
+    COLOR_BLACK,
+    A_BOLD,
+    COLOR_PAIR,
+};
 
 use pixelated::{Pixelated, Tile};
 
-static BOX: &'static str = "\u{2588}";
+const BOX: &'static str = " ";
+const BLUE_PAIR: i16 = 1;
+const RED_PAIR: i16 = 2;
+const GREEN_PAIR: i16 = 3;
+const YELLOW_PAIR: i16 = 4;
+const CYAN_PAIR: i16 = 5;
+const PURPLE_PAIR: i16 = 6;
+const ERROR_PAIR: i16 = 7;
 
 fn main() {
     let mut game = Pixelated::new();
 
-    let stdin = io::stdin();
+    initscr();
+    start_color();
+    init_pair(BLUE_PAIR, COLOR_WHITE, COLOR_BLUE);
+    init_pair(RED_PAIR, COLOR_WHITE, COLOR_RED);
+    init_pair(GREEN_PAIR, COLOR_WHITE, COLOR_GREEN);
+    init_pair(YELLOW_PAIR, COLOR_WHITE, COLOR_YELLOW);
+    init_pair(CYAN_PAIR, COLOR_WHITE, COLOR_CYAN);
+    init_pair(PURPLE_PAIR, COLOR_WHITE, COLOR_MAGENTA);
+    init_pair(ERROR_PAIR, COLOR_RED, COLOR_BLACK);
 
     let mut moves = 0;
     let mut error = None;
     loop {
-        clear_screen();
-
+        clear();
         draw_grid(&game);
         draw_controls(moves, error.as_ref());
-        io::stdout().flush().ok().expect("Could not flush stdout");
+        refresh();
 
-        let mut buffer = String::new();
-        stdin.read_line(&mut buffer).expect("Could not read input");
-
-        let buffer = buffer.trim();
-        if buffer == "q" {
+        let c = from_u32(getch() as u32).expect("Input out of acceptable range");
+        if c == 'q' {
             break;
         }
+        else if c == '\n' {
+            continue;
+        }
 
-        let tile = Tile::from_str(&buffer);
+        let tile = Tile::from_char(&c);
         if tile.is_none() {
-            error = Some(format!("Unrecognized input: '{}'", buffer));
+            error = Some(format!("Unrecognized input: '{}'", c));
             continue;
         }
 
@@ -45,59 +79,67 @@ fn main() {
 
         game.apply_tile(tile.unwrap());
     }
+
+    endwin();
 }
 
 fn draw_grid(game: &Pixelated) {
     for row in 0..Pixelated::rows() {
         for col in 0..Pixelated::cols() {
             let tile = game.get((row as isize, col as isize)).unwrap();
-            let tile = paint_str(tile, BOX);
-            print!("{}", tile);
+            printw_tile(tile, BOX);
         }
-        print!("\n");
+        printw(&format!("\n"));
     }
 }
 
 fn draw_controls(moves: u32, error: Option<&String>) {
-    println!("");
+    printw("\n");
 
-    print!("{}", control_cell(Tile::Blue, "b"));
-    print!(" {}", control_cell(Tile::Red, "r"));
-    print!(" {}", control_cell(Tile::Green, "g"));
-    print!(" {}", control_cell(Tile::Yellow, "y"));
-    print!(" {}", control_cell(Tile::Cyan, "c"));
-    print!(" {}", control_cell(Tile::Purple, "p"));
-    print!(" quit with q");
-    println!("\n");
+    printw_control_cell(Tile::Blue, "b");
+    printw(" ");
+    printw_control_cell(Tile::Red, "r");
+    printw(" ");
+    printw_control_cell(Tile::Green, "g");
+    printw(" ");
+    printw_control_cell(Tile::Yellow, "y");
+    printw(" ");
+    printw_control_cell(Tile::Cyan, "c");
+    printw(" ");
+    printw_control_cell(Tile::Purple, "p");
+    printw(" quit with q");
+    printw("\n\n");
 
-    println!("Moves: {}", moves);
+    printw(&format!("Moves: {}\n", moves));
 
     if !error.is_none() {
-        println!("{}", Colour::Red.paint(error.unwrap().clone()).to_string());
+        printw_colored(ERROR_PAIR, &format!("{}\n", error.unwrap()));
     }
 
-    print!("Enter color: ");
+    printw("Enter color: ");
 }
 
-fn control_cell(tile: Tile, command: &str) -> String {
-    Colour::White.bold().on(tile_colour(tile)).paint(format!(" {} ", command)).to_string()
+fn printw_control_cell(tile: Tile, command: &str) {
+    attron(A_BOLD());
+    printw_tile(tile, &format!(" {} ", command));
+    attroff(A_BOLD());
 }
 
-fn paint_str(tile: Tile, data: &str) -> String {
-    tile_colour(tile).paint(data).to_string()
+fn printw_tile(tile: Tile, text: &str) {
+    let pair = match tile {
+        Tile::Blue => BLUE_PAIR,
+        Tile::Red => RED_PAIR,
+        Tile::Green => GREEN_PAIR,
+        Tile::Yellow => YELLOW_PAIR,
+        Tile::Cyan => CYAN_PAIR,
+        Tile::Purple => PURPLE_PAIR,
+    };
+
+    printw_colored(pair, text);
 }
 
-fn tile_colour(tile: Tile) -> Colour {
-    match tile {
-        Tile::Blue => Colour::Blue,
-        Tile::Red => Colour::Red,
-        Tile::Green => Colour::Green,
-        Tile::Yellow => Colour::Yellow,
-        Tile::Cyan => Colour::Cyan,
-        Tile::Purple => Colour::Purple,
-    }
-}
-
-fn clear_screen() {
-    Command::new("clear").status().expect("Could not clear screen");
+fn printw_colored(pair: i16, text: &str) {
+    attron(COLOR_PAIR(pair));
+    printw(text);
+    attroff(COLOR_PAIR(pair));
 }

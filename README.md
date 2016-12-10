@@ -23,4 +23,15 @@ Then you can run standard cargo commands to play the game:
 cargo run
 ```
 
+## Enable AI
+
+A very simple AI has been implemented. To use it, go into `main.rs` and
+change the `ENABLE_AI` variable to `true`.
+
+Example:
+
+```rust
+const ENABLE_AI: bool = true;
+```
+
 [rust]: https://www.rust-lang.org/

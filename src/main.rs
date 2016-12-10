@@ -2,15 +2,20 @@ extern crate rand;
 extern crate ansi_term;
 
 mod pixelated;
+mod ai;
 
 use std::io::{self, Write};
 use std::process::Command;
+use std::time::Duration;
+use std::thread::sleep;
 
 use ansi_term::Colour;
 
 use pixelated::{Pixelated, Tile};
 
 static BOX: &'static str = "\u{2588}";
+
+const ENABLE_AI: bool = false;
 
 fn main() {
     let mut game = Pixelated::new();
@@ -27,10 +32,26 @@ fn main() {
             draw_completed(moves);
             break;
         }
-        else {
-            draw_controls(moves, error.as_ref());
+        else if ENABLE_AI {
+            let m = ai::plan_move(&game);
+            if m.is_none() {
+                panic!("Could not plan AI move");
+            }
+            println!("");
+            draw_moves(moves);
+            moves += 1;
+
+            sleep(Duration::from_millis(100));
+            game.apply_tile(m.unwrap());
+
+            continue;
         }
-        flush_stdout();
+        else {
+            draw_controls();
+            draw_moves(moves);
+            draw_prompt(error.as_ref());
+            flush_stdout();
+        }
 
         let mut buffer = String::new();
         stdin.read_line(&mut buffer).expect("Could not read input");
@@ -70,7 +91,7 @@ fn draw_completed(moves: u32) {
     println!("You did it!");
 }
 
-fn draw_controls(moves: u32, error: Option<&String>) {
+fn draw_controls() {
     println!("");
 
     print!("{}", control_cell(Tile::Blue, "b"));
@@ -82,13 +103,18 @@ fn draw_controls(moves: u32, error: Option<&String>) {
     print!(" quit with q");
     println!("\n");
 
-    println!("Moves: {}", moves);
+}
 
+fn draw_prompt(error: Option<&String>) {
     if !error.is_none() {
         println!("{}", Colour::Red.paint(error.unwrap().clone()).to_string());
     }
 
     print!("Enter color: ");
+}
+
+fn draw_moves(moves: u32) {
+    println!("Moves: {}", moves);
 }
 
 fn flush_stdout() {

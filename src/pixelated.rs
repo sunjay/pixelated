@@ -75,6 +75,10 @@ impl Pixelated {
         self.grid.iter().all(|t| *t == first)
     }
 
+    pub fn get_grid(&self) -> &Grid {
+        &self.grid
+    }
+
     pub fn apply_tile(&mut self, tile: Tile) {
         let mut open = VecDeque::new();
         open.push_back((0, 0));

@@ -33,17 +33,18 @@ fn main() {
             break;
         }
         else if ENABLE_AI {
+            println!("");
+            draw_moves(moves);
+
             let m = ai::plan_move(&game);
             if m.is_none() {
                 panic!("Could not plan AI move");
             }
-            println!("");
-            draw_moves(moves);
-            moves += 1;
 
             sleep(Duration::from_millis(100));
             game.apply_tile(m.unwrap());
 
+            moves += 1;
             continue;
         }
         else {

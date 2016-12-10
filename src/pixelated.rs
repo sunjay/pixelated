@@ -45,7 +45,7 @@ pub struct Pixelated {
     grid: Grid,
 }
 
-pub const DIRECTIONS: [(isize, isize); 4] = [(0, 1), (1, 0), (0, -1), (-1, 0)];
+const DIRECTIONS: [(isize, isize); 4] = [(0, 1), (1, 0), (0, -1), (-1, 0)];
 
 impl Pixelated {
     pub fn rows() -> usize {
@@ -73,6 +73,10 @@ impl Pixelated {
     pub fn is_complete(&self) -> bool {
         let first = self.grid[0];
         self.grid.iter().all(|t| *t == first)
+    }
+
+    pub fn get_grid(&self) -> &Grid {
+        &self.grid
     }
 
     pub fn apply_tile(&mut self, tile: Tile) {

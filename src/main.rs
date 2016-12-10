@@ -23,8 +23,14 @@ fn main() {
         clear_screen();
 
         draw_grid(&game);
-        draw_controls(moves, error.as_ref());
-        io::stdout().flush().ok().expect("Could not flush stdout");
+        if game.is_complete() {
+            draw_completed(moves);
+            break;
+        }
+        else {
+            draw_controls(moves, error.as_ref());
+        }
+        flush_stdout();
 
         let mut buffer = String::new();
         stdin.read_line(&mut buffer).expect("Could not read input");
@@ -58,6 +64,12 @@ fn draw_grid(game: &Pixelated) {
     }
 }
 
+fn draw_completed(moves: u32) {
+    println!("");
+    println!("Moves: {}", moves);
+    println!("You did it!");
+}
+
 fn draw_controls(moves: u32, error: Option<&String>) {
     println!("");
 
@@ -77,6 +89,10 @@ fn draw_controls(moves: u32, error: Option<&String>) {
     }
 
     print!("Enter color: ");
+}
+
+fn flush_stdout() {
+    io::stdout().flush().ok().expect("Could not flush stdout");
 }
 
 fn control_cell(tile: Tile, command: &str) -> String {

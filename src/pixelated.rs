@@ -70,6 +70,11 @@ impl Pixelated {
         }
     }
 
+    pub fn is_complete(&self) -> bool {
+        let first = self.grid[0];
+        self.grid.iter().all(|t| *t == first)
+    }
+
     pub fn apply_tile(&mut self, tile: Tile) {
         let mut open = VecDeque::new();
         open.push_back((0, 0));

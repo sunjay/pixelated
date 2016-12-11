@@ -15,14 +15,19 @@ use pixelated::{Pixelated, Tile};
 
 static BOX: &'static str = "\u{2588}";
 
-const ENABLE_AI: bool = false;
+const ENABLE_AI: bool = true;
 
 fn main() {
     let mut game = Pixelated::new();
 
     let stdin = io::stdin();
 
-    let mut moves = 0;
+    let mut plan = None;
+    if ENABLE_AI {
+        plan = ai::plan_moves(&game);
+    }
+
+    let mut moves: usize = 0;
     let mut error = None;
     loop {
         clear_screen();
@@ -36,13 +41,16 @@ fn main() {
             println!("");
             draw_moves(moves);
 
-            let m = ai::plan_move(&game);
+            let m = match plan {
+                None => panic!("No moves planned"),
+                Some(ref p) => p.get(moves),
+            };
             if m.is_none() {
                 panic!("Could not plan AI move");
             }
 
             sleep(Duration::from_millis(100));
-            game.apply_tile(m.unwrap());
+            game.apply_tile(*m.unwrap());
 
             moves += 1;
             continue;
@@ -86,9 +94,9 @@ fn draw_grid(game: &Pixelated) {
     }
 }
 
-fn draw_completed(moves: u32) {
+fn draw_completed(moves: usize) {
     println!("");
-    println!("Moves: {}", moves);
+    draw_moves(moves);
     println!("You did it!");
 }
 
@@ -114,7 +122,7 @@ fn draw_prompt(error: Option<&String>) {
     print!("Enter color: ");
 }
 
-fn draw_moves(moves: u32) {
+fn draw_moves(moves: usize) {
     println!("Moves: {}", moves);
 }
 

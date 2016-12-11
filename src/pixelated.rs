@@ -15,6 +15,10 @@ pub enum Tile {
 const ALL_TILES: [Tile; 6] = [Tile::Blue, Tile::Red, Tile::Green, Tile::Yellow, Tile::Cyan, Tile::Purple];
 
 impl Tile {
+    pub fn all() -> [Tile; 6] {
+        ALL_TILES
+    }
+
     pub fn from_str(data: &str) -> Option<Tile> {
         match data {
             "b" => Some(Tile::Blue),
@@ -75,10 +79,6 @@ impl Pixelated {
         self.grid.iter().all(|t| *t == first)
     }
 
-    pub fn get_grid(&self) -> &Grid {
-        &self.grid
-    }
-
     pub fn apply_tile(&mut self, tile: Tile) {
         let mut open = VecDeque::new();
         open.push_back((0, 0));
@@ -88,7 +88,7 @@ impl Pixelated {
             return;
         }
 
-        while open.len() > 0 {
+        while !open.is_empty() {
             let (row, col) = open.pop_front().unwrap();
 
             self.put_tile(row as usize, col as usize, tile);
@@ -115,5 +115,13 @@ impl Pixelated {
 
     fn put_tile(&mut self, row: usize, col: usize, tile: Tile) {
         self.grid[row * COLS + col] = tile;
+    }
+}
+
+impl Clone for Pixelated {
+    fn clone(&self) -> Pixelated {
+        Pixelated {
+            grid: self.grid,
+        }
     }
 }

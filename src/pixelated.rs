@@ -12,7 +12,7 @@ pub enum Tile {
     Purple,
 }
 
-static ALL_TILES: [Tile; 6] = [Tile::Blue, Tile::Red, Tile::Green, Tile::Yellow, Tile::Cyan, Tile::Purple];
+const ALL_TILES: [Tile; 6] = [Tile::Blue, Tile::Red, Tile::Green, Tile::Yellow, Tile::Cyan, Tile::Purple];
 
 impl Tile {
     pub fn from_str(data: &str) -> Option<Tile> {

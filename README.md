@@ -34,4 +34,6 @@ Example:
 const ENABLE_AI: bool = true;
 ```
 
+![AI Demo GIF](ai-demo.gif)
+
 [rust]: https://www.rust-lang.org/
